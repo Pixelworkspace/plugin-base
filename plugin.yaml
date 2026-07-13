@@ -1,0 +1,21 @@
+# pixelworkspace plugin manifest.
+# `contributes` declares what the plugin adds (panels/commands/menus/tools) so
+# the app knows its capabilities WITHOUT running the code. The ids here must
+# match the px.register* calls in src/ — `npm run validate` enforces this.
+
+name: My Plugin
+version: 0.1.0
+entry: output/entry.js
+hosts: []
+description: A starter pixelworkspace plugin — panel, command and menu, built on the generic px.* API.
+
+contributes:
+  panels:
+    - id: main
+      title: My Plugin
+  commands:
+    - id: fill
+      title: Fill with current color
+  menus:
+    - path: My Plugin/Fill with current color
+      command: fill
