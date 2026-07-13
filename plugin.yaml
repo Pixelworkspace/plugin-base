@@ -1,21 +1,25 @@
-# pixelworkspace plugin manifest.
-# `contributes` declares what the plugin adds (panels/commands/menus/tools) so
-# the app knows its capabilities WITHOUT running the code. The ids here must
-# match the px.register* calls in src/ — `npm run validate` enforces this.
+# Pixellab AI — pixelworkspace plugin manifest.
+# `contributes` declares what the plugin adds, so the app knows its capabilities
+# WITHOUT running the code. The ids here must match the px.register* calls in the
+# source (see src/main.ts) — `npm run validate` enforces this.
 
-name: My Plugin
-version: 0.1.0
+name: Pixellab AI
+version: 0.2.0
 entry: output/entry.js
-hosts: []
-description: A starter pixelworkspace plugin — panel, command and menu, built on the generic px.* API.
+hosts:
+  - api.pixellab.ai
+description: >-
+  Generate, animate and repaint sprites with the Pixellab AI API — own panel
+  with job tracking, progress, cost details, and metadata-tagged file storage.
+  Built purely on the generic px.* extension API.
 
 contributes:
   panels:
     - id: main
-      title: My Plugin
+      title: Pixellab AI
   commands:
-    - id: fill
-      title: Fill with current color
+    - id: pixellab.generate
+      title: Generate sprite → canvas
   menus:
-    - path: My Plugin/Fill with current color
-      command: fill
+    - path: Pixellab/Generate sprite → canvas
+      command: pixellab.generate

@@ -1,9 +1,9 @@
 {
-  "name": "my-plugin",
-  "version": "0.1.0",
+  "name": "pixellab-plugin",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "A starter pixelworkspace plugin",
+  "description": "Pixellab AI plugin for pixelworkspace",
   "scripts": {
     "build": "esbuild src/main.ts --bundle --format=iife --target=es2020 --outfile=output/entry.js",
     "typecheck": "tsc --noEmit",
