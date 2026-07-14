@@ -48,6 +48,7 @@ src/
 scripts/validate.mjs        manifest validator (structure + code cross-check)
 types/pixelworkspace.d.ts   px type definitions (dev-only autocomplete)
 tsconfig.json               strict TS, ambient px types
+docs/README.md              docs landing page (rendered on GitHub)
 docs/API.md                 the full px API reference
 ```
 
