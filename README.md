@@ -1,24 +1,13 @@
-# pixelworkspace plugin — base template
+# Pixellab AI — pixelworkspace plugin
 
-A minimal, working starting point for a **pixelworkspace** plugin: TypeScript
-source, bundled to a single file with esbuild, a `plugin.yaml` manifest that
-declares its contributions, and a validator that keeps the two in sync.
-
-Use it as the base repo you fork for every new plugin.
-
-## What a plugin is
-
-A plugin is a git repository with a **`plugin.yaml`** manifest at its root and a
-built **entry script**. The app clones your repo, reads the manifest, and runs
-the entry (a single bundled JS file) in a **sandbox** whose only connection to
-the host is the global **`px`** object — no DOM, no `window`, no `fetch`.
-Network access is limited to the hosts you declare.
-
-The manifest **declares** what the plugin contributes (panels, commands, menus,
-tools); the code **implements** them by id. So the app knows a plugin's
-capabilities without executing anything.
+Wraps the [Pixellab AI API](https://api.pixellab.ai) as a pixelworkspace plugin:
+generate, animate and repaint sprites from a panel, with job tracking, progress,
+cost details, and metadata-tagged file storage. Built entirely on the generic
+**`px.*`** extension API — nothing Pixellab-specific lives in the host.
 
 ## Develop
+
+TypeScript, bundled to a single `entry.js` with esbuild.
 
 ```bash
 npm install
@@ -28,24 +17,31 @@ npm run build       # esbuild src/main.ts → output/entry.js  (commit the resul
 npm run check       # all three
 ```
 
-Your editor gets full autocomplete for `px` from `types/pixelworkspace.d.ts`
-(wired via `tsconfig.json`).
-
 ## Layout
 
 ```
-plugin.yaml                 manifest — name/version/entry/hosts + `contributes`
-output/entry.js             built bundle (what the app runs) — committed
+plugin.yaml            manifest — name/version/entry/hosts + `contributes`
+output/entry.js        built bundle (what the app runs) — committed
 src/
+  config.ts            constants (endpoints base, sizes, costs, tabs)
   types/
-    widget-type.ts          WidgetType — widget-kind constants (as-const, scaffold)
-    action.ts               Action — panel action constants (as-const)
-    index.ts                barrel (import { WidgetType, Action } from './types')
-  storage.ts                how storage is done (px.storage)
-  actions.ts                a command implementation (editor pixels)
-  panel.ts                  how UI is made — render() + event router
-  main.ts                   entry — wires panel/command/menu to their code
-scripts/validate.mjs        manifest validator (structure + code cross-check)
+    index.ts           domain types (Settings, JobRecord, …) + barrel
+    widget-type.ts     WidgetType — widget-kind constants (as-const, scaffold)
+    action.ts          Action — panel action constants (as-const)
+  storage.ts           how storage is done — settings, auth header, seq counter
+  job-store.ts         job cache (survives reload) + thumbnails
+  api.ts               the Pixellab client — submit / poll / balance
+  state.ts             transient (non-persisted) panel state
+  widgets.ts           shared UI snippets (key banner, status icon)
+  panel.ts             render() + the event router (how UI is assembled)
+  main.ts              entry — wires panel/command/menu to their code
+  features/
+    generate.ts        generate-image-v2 + Generate tab + insert
+    animate.ts         animate-with-text-v3 → timeline + Animate tab
+    repaint.ts         inpaint-style region repaint + Repaint tab
+    jobs.ts            Jobs tab, detail view, resume, open
+    settings.ts        Settings tab + balance
+scripts/validate.mjs   the manifest validator
 types/pixelworkspace.d.ts   px type definitions (dev-only autocomplete)
 tsconfig.json               strict TS, ambient px types
 docs/README.md              docs landing page (rendered on GitHub)
@@ -54,31 +50,25 @@ docs/API.md                 the full px API reference
 
 ## Manifest ↔ code (the two tracks)
 
+`plugin.yaml` **declares** the plugin's contributions so the app knows its
+capabilities without executing anything:
+
 ```yaml
-# plugin.yaml
 contributes:
-  panels:   [{ id: main, title: My Plugin }]
-  commands: [{ id: fill, title: Fill with current color }]
-  menus:    [{ path: My Plugin/Fill with current color, command: fill }]
+  panels:   [{ id: main, title: Pixellab AI }]
+  commands: [{ id: pixellab.generate, title: Generate sprite → canvas }]
+  menus:    [{ path: Pixellab/Generate sprite → canvas, command: pixellab.generate }]
 ```
 
-```ts
-// src/main.ts
-px.registerPanel('main', 'My Plugin', renderPanel);
-px.registerCommand('fill', 'Fill with current color', fillCanvas);
-```
+The code **implements** them by id (`px.registerPanel('main', …)`,
+`px.registerCommand('pixellab.generate', …)`). `npm run validate` fails if the
+two drift apart (declared-but-not-registered, or registered-but-not-declared),
+and the host warns at load time.
 
-`npm run validate` fails if the two drift apart (declared-but-not-registered, or
-registered-but-not-declared), and the host warns at load time.
+## Setup & publish
 
-## Publish
-
-1. Push this folder to a git repo (public or private).
-2. In pixelworkspace: **Plugins → My plugins → ＋ New plugin**.
-3. Enter the **git URL**, optionally a **branch/ref** and an **access token** for
-   private repos (stored encrypted).
-4. Publish. You can use it immediately; it appears in **Browse** once approved.
-
-To update: push (bump `version` in `plugin.yaml`), then hit **Pull**.
-
-See **[docs/API.md](docs/API.md)** for the full `px` reference and widget catalog.
+1. Open the panel → **Settings** → paste your Pixellab API token (kept in
+   `px.storage`; the plugin only reaches `api.pixellab.ai`, per `hosts`).
+2. Push this folder to a git repo. In pixelworkspace: **Plugins → My plugins →
+   ＋ New plugin** → enter the git URL (+ ref / token if private).
+3. Update: push (bump `version` in `plugin.yaml`), then **Pull** on the plugin.
